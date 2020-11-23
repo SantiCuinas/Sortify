@@ -1,18 +1,63 @@
+import React, { useState, useEffect } from "react";
 import "./App.css";
+import SpotifyAPIWrapper from "./Utils/SpotifyAPIWrapper";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Button from "react-bootstrap/Button";
+import Dropdown from "react-bootstrap/Dropdown";
+
+const pixelWidth = require("string-pixel-width");
 
 function Main(props) {
-    console.log(props.match.params.access_token);
+  const [playlists, setPlaylists] = useState({
+    options: [{ id: "", name: "" }],
+  });
+
+  useEffect(() => {
+    getPlaylists(props.match.params.access_token.split("=")[1]).then((x) => {
+      setPlaylists({ options: x.items });
+    });
+  }, []);
 
   return (
     <div className="App">
       <header className="App-header">
         <h1 className="title">Sortify</h1>
-        <Button variant="outline-primary">Sort it!</Button>{" "}
+        <Dropdown>
+          <Dropdown.Toggle variant="success" id="dropdown-basic">
+            Playlists
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            {playlists.options.map((x) => {
+              return (
+                <Dropdown.Item onClick={() => SortifyIt(x.id, props.match.params.access_token.split("=")[1])}>
+                  {x.name}
+                </Dropdown.Item>
+              );
+            })}
+          </Dropdown.Menu>
+        </Dropdown>
       </header>
     </div>
   );
 }
+
+const getPlaylists = async (tokenp) => {
+  const spotify = new SpotifyAPIWrapper(tokenp);
+  const userData = await spotify.getUserData();
+  return await spotify.getPlaylists(userData.id);
+};
+
+const SortifyIt = async (playlistId, token) => {
+  const spotify = new SpotifyAPIWrapper(token);
+  const songs = await spotify.getSongs(playlistId);
+
+  songs.items.sort((a, b) => {
+    return pixelWidth(a.track.name) - pixelWidth(b.track.name);
+  });
+
+  const sortedSongs = songs.items.map((x) => {
+    return x.track.uri;
+  });
+  spotify.savePlaylist(sortedSongs, playlistId);
+};
 
 export default Main;
