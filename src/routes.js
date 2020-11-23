@@ -7,7 +7,7 @@ export default function Routes() {
   return (
     <Router>
       <Switch>
-        <Route path="/main/:access_token?&:token_type" component={Main} />
+        <Route path="/main/" component={Main} />
         <Route path="/" component={App} />
       </Switch>
     </Router>

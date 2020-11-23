@@ -3,6 +3,7 @@ import "./App.css";
 import SpotifyAPIWrapper from "./Utils/SpotifyAPIWrapper";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Dropdown from "react-bootstrap/Dropdown";
+import queryString from "query-string";
 
 const pixelWidth = require("string-pixel-width");
 
@@ -12,9 +13,10 @@ function Main(props) {
   });
 
   useEffect(() => {
-    getPlaylists(props.match.params.access_token.split("=")[1]).then((x) => {
+    getPlaylists(queryString.parse(props.location.hash).access_token).then((x) => {
       setPlaylists({ options: x.items });
     });
+    console.log("Cosa de params", props)
   }, []);
 
   return (
@@ -28,7 +30,7 @@ function Main(props) {
           <Dropdown.Menu>
             {playlists.options.map((x) => {
               return (
-                <Dropdown.Item onClick={() => SortifyIt(x.id, props.match.params.access_token.split("=")[1])}>
+                <Dropdown.Item onClick={() => SortifyIt(x.id, queryString.parse(props.location.hash).access_token)}>
                   {x.name}
                 </Dropdown.Item>
               );
